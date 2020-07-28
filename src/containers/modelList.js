@@ -13,10 +13,12 @@ class ModelList extends Component {
 
     componentDidMount(){
         this.props.getListData();
-
     }
 
     mapDataList = (lists) => {
+        if(!lists){
+            return '';
+        }
         var products = [];
         for(var i in lists) {
             var list = {...lists[i], id: i}
@@ -26,39 +28,13 @@ class ModelList extends Component {
         return products;
     }
 
-    showList = () => {
-        if(!this.props.addresses){
-            return;
-        }
-        var products = this.mapDataList(this.props.addresses);
-
-        if(this.props.keys){
-            products = products.filter((product) => {
-                return product.name.toLowerCase().indexOf(this.props.keys) !== -1;
-            })
-        }
-
-
-        return products.slice(
-            (this.props.pages.current_page * this.props.pages.per_page)
-            - this.props.pages.per_page, this.props.pages.current_page * this.props.pages.per_page)
-            .map((item,index) => {
-                // console.log('current',' ',this.props.pages.current_page);
-                // console.log('per' ,' ',this.props.pages.per_page);
-                return(<ListItem
-                    key={index}
-                    product={item}
-                />);
-            })
-    }
-
     
-    simplePaging() {
+    simplePaging(total) {
         return <div>
             {this.props.pages.current_page > 1 ?
             <button onClick={() => this.changePage('back')}>Back</button>
             : null}
-            {this.props.pages.total > this.props.pages.current_page * this.props.pages.per_page ?
+            {total > this.props.pages.current_page * this.props.pages.per_page ?
             <button onClick={() => this.changePage('next')}>Next</button>
             : null}
         </div>;
@@ -74,16 +50,36 @@ class ModelList extends Component {
 
 
     render() {
-            
+        var { addresses, keys } = this.props;
+        var { current_page, per_page } = this.props.pages;
+        var products = this.mapDataList(addresses);
+        
+        if(keys){
+            products = products.filter((product) => {
+                return product.name.toLowerCase().indexOf(keys) !== -1;
+            })
+        }
+
+        var total = products.length;
+
+        var elForm = products.slice(
+            (current_page * per_page)
+            - per_page, current_page * per_page)
+            .map((item,index) => {
+                return(<ListItem
+                    key={index}
+                    product={item}
+                />);
+            })
         
         return (
             <React.Fragment>
                 <div className="container">
                     
                     <ViewList>
-                        { this.showList() }
+                        { elForm }
                     </ViewList>
-                    { this.simplePaging() }
+                    { this.simplePaging(total) }
                     
                 </div>
                 
